@@ -1,1 +1,3 @@
-# pod-summary-plugin
+# Geist operator
+
+OpenShift operator and console plugin for change management and troubleshooting.
