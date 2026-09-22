@@ -1,0 +1,100 @@
+gnomaDefs:
+  OPERATOR_NAME: $<PROJECT_NAME>-operator
+  PLUGIN_NAME: $<PROJECT_NAME>-console-plugin
+
+  PATCH_SA_NAME: console-patcher
+
+  VIEW_VERBS: ["get", "list", "watch"]
+
+gnomaTemplates-rbac:
+- templateName: serviceAccount
+  objNames: [$<OPERATOR_NAME>, $<PLUGIN_NAME>]
+
+- apiVersion: console.openshift.io/v1
+  objName: $<PLUGIN_NAME>
+  kind: ConsolePlugin
+  template:
+    spec:
+      displayName: $<OBJ_NAME>
+      i18n:
+        loadType: Lazy
+      backend:
+        type: Service
+        service:
+          name: $<OBJ_NAME>
+          namespace: $<HELM_RELEASE_NAMESPACE>
+          port: $<PORT>
+          basePath: /
+
+- templateName: clusterRole
+  objName: $<OPERATOR_NAME>-admin
+  gnomaDefs:
+    MIN_PERMISSIONS: ["get", "list", "patch", "update", "watch"]
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: 'true'
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: 'true'
+  rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+  - verbs:
+    - '*'
+    apiGroups:
+    - monitoring.ahplos.org
+    resources:
+    - terminatedpodsnapshots
+  - apiGroups:
+    - operator.openshift.io
+    resources:
+    - consoles
+    verbs: $<MIN_PERMISSIONS>
+  - apiGroups:
+    - ''
+    resources:
+    - events
+    - namespaces
+    verbs: $<VIEW_VERBS>
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - pods/status
+    - pods/finalizers
+    - pods/log
+    verbs: $<MIN_PERMISSIONS>
+  - apiGroups:
+    - project.openshift.io
+    resources:
+    - projects
+    verbs: $<VIEW_VERBS>
+  - apiGroups:
+    - apiextensions.k8s.io
+    resources:
+    - customresourcedefinitions
+    verbs: $<VIEW_VERBS>
+
+- templateName: clusterRoleBinding
+  objName: $<OPERATOR_NAME>
+  subjects:
+  - kind: ServiceAccount
+    name: $<OPERATOR_NAME>
+    namespace: $<HELM_RELEASE_NAMESPACE>
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: $<OPERATOR_NAME>-admin
+
+- templateName: clusterRole
+  objName: $<PLUGIN_NAME>-view
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: 'true'
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: 'true'
+  rules:
+  - apiGroups:
+    - monitoring.ahplos.org
+    resources:
+    - deletedpodsummary
+    verbs: $<VIEW_VERBS>
+

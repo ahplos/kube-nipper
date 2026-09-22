@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/.DS_Store
+**/__pycache__
+.devcontainer/dev.env
+integration-tests/videos
+integration-tests/screenshots
+.venv
+.deploy/**/charts/
+*.swp
+*.bak
+*.tmp
+*.orig
+*.lock
