@@ -7,9 +7,9 @@ USER root
 ARG OC_TAR_GZ_FILE=openshift-client-linux.tar.gz
 ARG OC_CLI_URL=https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/${OC_TAR_GZ_FILE}
 
-ARG CONTROLLER_DIR=terminated-pod-snapshot-controller
+ARG CONTROLLER_DIR=kube-nipper-controller
 
-COPY requirements.txt src/operator /${CONTROLLER_DIR}/
+COPY requirements.txt src /${CONTROLLER_DIR}/
 
 WORKDIR /${CONTROLLER_DIR}
 

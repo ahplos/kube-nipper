@@ -9,14 +9,14 @@ from box import Box, BoxList
 import kr8s
 from kr8s.objects import Job, Pod, Event
 
-from utilities.constants import TPS_CONSTS
-from utilities.terminated_pod_snapshot import TerminatedPodSnapshot
+from utilities.constants import NIP_CONSTS
+from utilities.resource_nip import ResourceNip
 
 RESTART_COUNT = 'restartCount'
 
 @kopf.index('namespaces')
 async def tps_namespaces(annotations: kopf.Annotations, name: str, logger, **_: Any) -> Any:
-    if (annotations.get(TerminatedPodSnapshot.TERMINATED_POD_SNAPSHOT_ANNOTATION)) == 'true':
+    if (annotations.get(ResourceNip.RESOURCE_NIP_ANNOTATION)) == 'true':
         logger.info(f'MONITORING namespace {name}')
         return {name: True}
 
@@ -25,7 +25,7 @@ def is_monitored_namespace(tps_namespaces: kopf.Index, namespace, logger, **_: A
 
 def is_pod_container_restarted(tps_namespaces: kopf.Index, status: kopf.Status, namespace, name, logger, **_: Any):
     firstRestart = any(cs.get(RESTART_COUNT) > 0 for cs in status['containerStatuses'])
-    pod_snapshot = TerminatedPodSnapshot(name, namespace)
+    pod_snapshot = ResourceNip(name, namespace)
     logger.debug(f'checking restart count for Pod {name} in namespace {namespace}: {firstRestart}')
     return firstRestart and not pod_snapshot.exists()
 
@@ -51,7 +51,7 @@ def create_or_update_tps(meta: kopf.Meta, spec: kopf.Spec, status: kopf.Status, 
     meta = Box(meta)
 
     pod = Pod(name, namespace)
-    pod_snapshot = TerminatedPodSnapshot(name, namespace)
+    pod_snapshot = ResourceNip(name, namespace)
 
     pod_events = BoxList(pod_snapshot.data.events)
     pod_events.extend(Event.list(namespace=namespace, field_selector=f'involvedObject.name={name},involvedObject.kind=Pod', raw=True))
@@ -63,16 +63,16 @@ def create_or_update_tps(meta: kopf.Meta, spec: kopf.Spec, status: kopf.Status, 
     pod_sum_patch = generate_patch(meta, spec, status, pod_events, param, containerLogs)
 
     if (not pod_snapshot.exists()):
-        logger.info(f'creating TerminatedPodSnapshot {namespace}{name}')
+        logger.info(f'creating ResourceNip {namespace}{name}')
         pod_snapshot.raw |= pod_sum_patch
         pod_snapshot.create()
     else:
-        logger.info(f'patching TerminatedPodSnapshot {namespace}{name}')
+        logger.info(f'patching ResourceNip {namespace}{name}')
         pod_snapshot.patch(pod_sum_patch, type='merge')
 
     log_tps_creation(meta, status, pod_sum_patch, logger)
 
-def get_container_logs(pod: Pod, pod_snapshot: TerminatedPodSnapshot, status: kopf.Status, param: str):
+def get_container_logs(pod: Pod, pod_snapshot: ResourceNip, status: kopf.Status, param: str):
     isRestart = param == 'onRestart'
 
     contNames = [cont.name for cont in status.containerStatuses if not isRestart or cont.get(RESTART_COUNT)]
@@ -92,12 +92,12 @@ def generate_patch(meta: kopf.Meta, spec: kopf.Spec, status: kopf.Status, pod_ev
     del meta['managedFields']
 
     return Box({
-        TPS_CONSTS.DATA: {
+        NIP_CONSTS.DATA: {
             f'{param}Logs': containerLogs,
-            TPS_CONSTS.METADATA: meta,
-            TPS_CONSTS.SPEC: Box(spec),
-            TPS_CONSTS.STATUS: status,
-            TPS_CONSTS.EVENTS: pod_events
+            NIP_CONSTS.METADATA: meta,
+            NIP_CONSTS.SPEC: Box(spec),
+            NIP_CONSTS.STATUS: status,
+            NIP_CONSTS.EVENTS: pod_events
         }
     })
 

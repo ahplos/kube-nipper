@@ -47,5 +47,5 @@ class _CONSTS(type):
     def ON_RESTART_LOGS(self) -> str:
         return 'onRestartLogs'
 
-class TPS_CONSTS(object, metaclass=_CONSTS):
+class NIP_CONSTS(object, metaclass=_CONSTS):
     pass

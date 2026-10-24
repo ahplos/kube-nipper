@@ -1,0 +1,127 @@
+gnoma:
+  gnomaDefs:
+    OPERATOR_NAME: kube-nipper
+    CONTROLLER_NAME: $<OPERATOR_NAME>-controller
+
+    NIPPER_CONTROLLER_IMAGE: $<IMAGE_REGISTRY>/$<CONTROLLER_NAME>:latest
+
+    NIPPER_IMAGE_PULL_SECRET: demo-registry-credentials
+
+    PORT: 8443
+
+    IMAGE_PULL_POLICY: Always
+    PATCH_SA_NAME: console-patcher
+
+    NIPPER_CONTROLLER_ADMIN: $<OPERATOR_NAME>-admin
+
+    NIPPER_DEFAULT_RUNTIMES: default-runtimes
+
+    VIEW_VERBS: ["get", "list", "watch"]
+
+  gnomaDefs-DEV:
+    IMAGE_PULL_POLICY: Always
+    IMAGE_REGISTRY: dev-demo-image-registry.apps-crc.testing
+
+  gnomaTemplates:
+  - templateNames: [deployment, service]
+    objName: $<CONTROLLER_NAME>
+    port: $<PORT>
+    image: $<NIPPER_CONTROLLER_IMAGE>
+    imagePullSecrets:
+    - name: $<NIPPER_IMAGE_PULL_SECRET>
+    imagePullPolicy: $<IMAGE_PULL_POLICY>
+    strategy:
+      type: Recreate
+    serviceAccountName: $<NIPPER_CONTROLLER_ADMIN>
+    workDir: /kube-nipper-controller
+    command:
+    - bash
+    - -c
+    - |-
+      set -ex
+      python --version
+      kopf run --all-namespaces $(ls *_controller.py)
+    env:
+    - name: NIPPER_CONTROLLER_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: NIPPER_CONTROLLER_NAME
+      value: $<CONTROLLER_NAME>
+    - name: NIPPER_CONTROLLER_PORT
+      value: $<toString|PORT>
+
+  - templateName: clusterRole
+    objName: $<NIPPER_CONTROLLER_ADMIN>
+    gnomaDefs:
+      MIN_PERMISSIONS: ["get", "list", "patch", "update", "watch"]
+    annotations:
+      rbac.authorization.kubernetes.io/autoupdate: 'true'
+    labels:
+      rbac.authorization.k8s.io/aggregate-to-edit: 'true'
+    rules:
+    - apiGroups: [""]
+      resources: ["events"]
+      verbs: ["create", "patch", "update"]
+    - verbs:
+      - '*'
+      apiGroups:
+      - nipper.ahplos.org
+      resources:
+      - resourcenips
+    - apiGroups:
+      - operator.openshift.io
+      resources:
+      - consoles
+      verbs: $<MIN_PERMISSIONS>
+    - apiGroups:
+      - ''
+      resources:
+      - events
+      - namespaces
+      verbs: $<VIEW_VERBS>
+    - apiGroups:
+      - ""
+      resources:
+      - pods
+      - pods/status
+      - pods/finalizers
+      - pods/log
+      verbs: $<MIN_PERMISSIONS>
+    - apiGroups:
+      - project.openshift.io
+      resources:
+      - projects
+      verbs: $<VIEW_VERBS>
+    - apiGroups:
+      - apiextensions.k8s.io
+      resources:
+      - customresourcedefinitions
+      verbs: $<VIEW_VERBS>
+
+  - templateName: clusterRole
+    objName: $<OPERATOR_NAME>-view
+    annotations:
+      rbac.authorization.kubernetes.io/autoupdate: 'true'
+    labels:
+      rbac.authorization.k8s.io/aggregate-to-view: 'true'
+    rules:
+    - apiGroups:
+      - nipper.ahplos.org
+      resources:
+      - deletedpodsummary
+      verbs: $<VIEW_VERBS>
+
+  - templateName: serviceAccount
+    objName: $<NIPPER_CONTROLLER_ADMIN>
+
+  - templateName: clusterRoleBinding
+    objName: $<NIPPER_CONTROLLER_ADMIN>
+    subjects:
+    - kind: ServiceAccount
+      name: $<NIPPER_CONTROLLER_ADMIN>
+      namespace: $<HELM_RELEASE_NAMESPACE>
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: $<NIPPER_CONTROLLER_ADMIN>
