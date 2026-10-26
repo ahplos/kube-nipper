@@ -10,11 +10,21 @@ spec:
     singular: resourcenip
     kind: ResourceNip
     shortNames:
-    - tps
+    - nip
+    - nips
   versions:
   - name: v1beta1
     served: true
     storage: true
+    additionalPrinterColumns:
+    - name: Object
+      type: string
+      description: The apiVersion of the resource captured in this nip.
+      jsonPath: .data.gvk
+    - name: Captured
+      type: string
+      description: The time the nip was captured.
+      jsonPath: .metadata.creationTimestamp
     schema:
       openAPIV3Schema:
         type: object
@@ -27,6 +37,8 @@ spec:
                 items:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
+              gvk:
+                type: string
               metadata:
                 type: object
                 x-kubernetes-preserve-unknown-fields: true

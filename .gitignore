@@ -2,6 +2,7 @@
 **/dist
 **/.DS_Store
 **/__pycache__
+.vscode
 .devcontainer/dev.env
 integration-tests/videos
 integration-tests/screenshots

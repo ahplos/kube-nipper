@@ -12,9 +12,10 @@ from kr8s.objects import Job, Pod, Event
 from utilities.constants import NIP_CONSTS
 from utilities.resource_nip import ResourceNip
 
+CONTAINER_STATUSES = 'containerStatuses'
 RESTART_COUNT = 'restartCount'
 
-@kopf.index('namespaces')
+@kopf.index('namespaces') # type: ignore
 async def tps_namespaces(annotations: kopf.Annotations, name: str, logger, **_: Any) -> Any:
     if (annotations.get(ResourceNip.RESOURCE_NIP_ANNOTATION)) == 'true':
         logger.info(f'MONITORING namespace {name}')
@@ -23,11 +24,20 @@ async def tps_namespaces(annotations: kopf.Annotations, name: str, logger, **_: 
 def is_monitored_namespace(tps_namespaces: kopf.Index, namespace, logger, **_: Any):
     return namespace in tps_namespaces
 
-def is_pod_container_restarted(tps_namespaces: kopf.Index, status: kopf.Status, namespace, name, logger, **_: Any):
-    firstRestart = any(cs.get(RESTART_COUNT) > 0 for cs in status['containerStatuses'])
-    pod_snapshot = ResourceNip(name, namespace)
-    logger.debug(f'checking restart count for Pod {name} in namespace {namespace}: {firstRestart}')
-    return firstRestart and not pod_snapshot.exists()
+def is_pod_container_restarted(old, new, namespace, name, logger, **_: Any):
+    old_statuses = {
+        c['name']: c.get(RESTART_COUNT, 0)
+        for c in old.get('status', {}).get(CONTAINER_STATUSES, [])
+    }
+
+    for container in new.get('status', {}).get(CONTAINER_STATUSES, []):
+        name = container[NIP_CONSTS.NAME]
+        current_restarts = container.get(RESTART_COUNT, 0)
+        old_restarts = old_statuses.get(name, 0)
+
+        if current_restarts > old_restarts:
+            return True
+    return False
 
 def remove_managed_fields(event):
     event.metadata.pop('managedFields', None)
@@ -51,32 +61,30 @@ def create_or_update_tps(meta: kopf.Meta, spec: kopf.Spec, status: kopf.Status, 
     meta = Box(meta)
 
     pod = Pod(name, namespace)
-    pod_snapshot = ResourceNip(name, namespace)
+    pod_nip = ResourceNip(name, namespace=namespace)
+    pod_nip.metadata.name = None
+    pod_nip.metadata.generateName = name + '-'
 
-    pod_events = BoxList(pod_snapshot.data.events)
+    pod_events = BoxList(pod_nip.data.events)
     pod_events.extend(Event.list(namespace=namespace, field_selector=f'involvedObject.name={name},involvedObject.kind=Pod', raw=True))
     pod_events = BoxList({event.metadata.name: remove_managed_fields(event) for event in pod_events}.values())
     pod_events.sort(key=lambda event: (event.lastTimestamp is None, event.lastTimestamp))
 
-    containerLogs = get_container_logs(pod, pod_snapshot, status, param)
+    containerLogs = get_container_logs(pod, pod_nip, status, param)
 
     pod_sum_patch = generate_patch(meta, spec, status, pod_events, param, containerLogs)
 
-    if (not pod_snapshot.exists()):
-        logger.info(f'creating ResourceNip {namespace}{name}')
-        pod_snapshot.raw |= pod_sum_patch
-        pod_snapshot.create()
-    else:
-        logger.info(f'patching ResourceNip {namespace}{name}')
-        pod_snapshot.patch(pod_sum_patch, type='merge')
+    logger.info(f'creating ResourceNip {namespace}{name}')
+    pod_nip.raw |= pod_sum_patch
+    pod_nip.create()
 
     log_tps_creation(meta, status, pod_sum_patch, logger)
 
-def get_container_logs(pod: Pod, pod_snapshot: ResourceNip, status: kopf.Status, param: str):
+def get_container_logs(pod: Pod, pod_nip: ResourceNip, status: kopf.Status, param: str):
     isRestart = param == 'onRestart'
 
     contNames = [cont.name for cont in status.containerStatuses if not isRestart or cont.get(RESTART_COUNT)]
-    containerLogs = BoxList(pod_snapshot.data.onRestartLogs if isRestart else [])
+    containerLogs = BoxList(pod_nip.data.onRestartLogs if isRestart else [])
     for contName in contNames:
         if not any(log.containerName == contName for log in containerLogs):
             containerLogs.append({
@@ -93,6 +101,7 @@ def generate_patch(meta: kopf.Meta, spec: kopf.Spec, status: kopf.Status, pod_ev
 
     return Box({
         NIP_CONSTS.DATA: {
+            'gvk': 'v1/pod',
             f'{param}Logs': containerLogs,
             NIP_CONSTS.METADATA: meta,
             NIP_CONSTS.SPEC: Box(spec),

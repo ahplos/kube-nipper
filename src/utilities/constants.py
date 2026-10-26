@@ -24,6 +24,14 @@ class _CONSTS(type):
         return 'labels'
 
     @property
+    def NAME(self) -> str:
+        return 'name'
+
+    @property
+    def NAMESPACE(self) -> str:
+        return 'namespace'
+
+    @property
     def DATA(self) -> str:
         return 'data'
 
