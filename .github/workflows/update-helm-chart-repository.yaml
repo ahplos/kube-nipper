@@ -51,7 +51,7 @@ jobs:
       run: |
         echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${REGISTRY} -u ${GITHUB_ACTOR} --password-stdin
         podman build -t ${REGISTRY}/${GITHUB_REPOSITORY}/${CHART_NAME}:${CHART_VERSION} -f Containerfile
-        podman push ${REGISTRY}/${GITHUB_REPOSITORY}/${CHART_NAME}:${CHART_VERSION}
+        podman push ${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/${CHART_NAME}:${CHART_VERSION}
 
     - name: Package and Push Helm Chart to GitHub OCI Registry
       run: |

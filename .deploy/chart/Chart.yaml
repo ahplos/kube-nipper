@@ -1,5 +1,5 @@
 apiVersion: v2
-name: kube-nipper-controller
+name: kube-nipper
 description: |-
   Deploys the kube-nipper controller, which has the ability to create snapshots of either Pods that are
   deleted or have restarted containers, or of arbitrary Kubernetes resources with defined rules of
