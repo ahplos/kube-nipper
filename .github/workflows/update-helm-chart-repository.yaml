@@ -53,7 +53,7 @@ jobs:
         image: ${{ env.CONTROLLER_NAME }}
         tags: ${{ env.CHART_VERSION }}
         containerfiles: ./Containerfile
-        oci: true
+        shell: /bin/bash
 
     - name: Push to Registry
       uses: redhat-actions/push-to-registry@v3
