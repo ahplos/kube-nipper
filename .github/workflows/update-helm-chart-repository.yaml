@@ -49,6 +49,7 @@ jobs:
     - name: Build and Push Controller Image
       id: build-and-push
       run: |
+        podman version
         echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${REGISTRY} -u ${GITHUB_ACTOR} --password-stdin
         podman build --format docker -t ${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/${CHART_NAME}:${CHART_VERSION} -f Containerfile
         podman push ${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/${CHART_NAME}:${CHART_VERSION}

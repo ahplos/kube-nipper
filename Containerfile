@@ -14,8 +14,6 @@ COPY requirements.txt src /${CONTROLLER_DIR}/
 WORKDIR /${CONTROLLER_DIR}
 
 SHELL ["/bin/bash", "-c"]
-RUN podman version
-
 RUN <<EOF
 podma
     set -ex
