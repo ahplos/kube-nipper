@@ -3,9 +3,11 @@ gnoma:
     OPERATOR_NAME: kube-nipper
     CONTROLLER_NAME: $<OPERATOR_NAME>-controller
 
-    NIPPER_CONTROLLER_IMAGE: $<IMAGE_REGISTRY>/$<CONTROLLER_NAME>:latest
+    NIPPER_IMAGE_PULL_SECRET: []
 
-    NIPPER_IMAGE_PULL_SECRET: demo-registry-credentials
+    IMAGE_REGISTRY: ghcr.io
+
+    NIPPER_CONTROLLER_IMAGE: $<IMAGE_REGISTRY>/$<CONTROLLER_NAME>:latest
 
     PORT: 8443
 
@@ -21,14 +23,15 @@ gnoma:
   gnomaDefs-DEV:
     IMAGE_PULL_POLICY: Always
     IMAGE_REGISTRY: dev-demo-image-registry.apps-crc.testing
+    NIPPER_IMAGE_PULL_SECRET:
+    - name: demo-registry-credentials
 
   gnomaTemplates:
   - templateNames: [deployment, service]
     objName: $<CONTROLLER_NAME>
     port: $<PORT>
     image: $<NIPPER_CONTROLLER_IMAGE>
-    imagePullSecrets:
-    - name: $<NIPPER_IMAGE_PULL_SECRET>
+    imagePullSecrets: $<NIPPER_IMAGE_PULL_SECRET>
     imagePullPolicy: $<IMAGE_PULL_POLICY>
     strategy:
       type: Recreate
