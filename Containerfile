@@ -15,7 +15,6 @@ WORKDIR /${CONTROLLER_DIR}
 
 SHELL ["/bin/bash", "-c"]
 RUN <<EOF
-podma
     set -ex
     #### ADJUST FOLLOWING FOR OTHER BASE IMAGE DISTROS ####
     microdnf install --assumeyes --nodocs tar gzip

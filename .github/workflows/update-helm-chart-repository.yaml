@@ -23,7 +23,7 @@ on:
 
 jobs:
   package-charts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       REGISTRY: ghcr.io
@@ -34,13 +34,6 @@ jobs:
     - name: Install Helm
       id: install-helm
       uses: azure/setup-helm@v5
-
-    - name: Install Latest Podman
-      uses: redhat-actions/podman-install@v1
-      with:
-        version_input: latest
-        file_type: msi
-        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Git Checkout Branch
       uses: actions/checkout@v7
