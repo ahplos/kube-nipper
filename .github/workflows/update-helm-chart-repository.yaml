@@ -61,4 +61,4 @@ jobs:
         cd .deploy/chart
         helm package --dependency-update .
 
-        helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://${REGISTRY}/${GITHUB_REPOSITORY}/
+        helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/
