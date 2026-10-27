@@ -37,6 +37,10 @@ jobs:
 
     - name: Install Latest Podman
       uses: redhat-actions/podman-install@v1
+      with:
+        version_input: latest
+        file_type: msi
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Git Checkout Branch
       uses: actions/checkout@v7
@@ -52,7 +56,6 @@ jobs:
     - name: Build and Push Controller Image
       id: build-and-push
       run: |
-        podman version
         echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${REGISTRY} -u ${GITHUB_ACTOR} --password-stdin
         podman build --format docker -t ${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/${CHART_NAME}:${CHART_VERSION} -f Containerfile
         podman push ${REGISTRY}/${GITHUB_REPOSITORY_OWNER}/${CHART_NAME}:${CHART_VERSION}
