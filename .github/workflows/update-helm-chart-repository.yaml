@@ -35,27 +35,20 @@ jobs:
       id: install-helm
       uses: azure/setup-helm@v5
 
-    - name: Git Checkout branch
-      uses: actions/checkout@v4
+    - name: Git Checkout Branch
+      uses: actions/checkout@v7
       with:
         ref: ${{ env.BRANCH_NAME }}
-
-    - name: Configure Git
-      run: |
-        set -ex
-        git config --global user.name "${GITHUB_REPOSITORY_OWNER}"
-        git config --global user.email "${GITHUB_REPOSITORY_OWNER}@donotreply.org"
-        git switch ${BRANCH_NAME}
 
     - name: Extract and Set Relevant Controller Configuration from Helm Chart
       run: |
         set -ex
-        echo "CONTROLLER_NAME=$(helm show chart . | yq -r '.name')" >> ${GITHUB_ENV}
-        echo "CHART_VERSION=$(helm show chart .deploy/${CONTROLLER_NAME} | yq -r '.version')" >> ${GITHUB_ENV}
+        echo "CONTROLLER_NAME=$(helm show chart .deploy/chart | yq -r '.name')" >> ${GITHUB_ENV}
+        echo "CHART_VERSION=$(helm show chart .deploy/chart | yq -r '.version')" >> ${GITHUB_ENV}
 
     - name: Build Controller Image
       id: build-image
-      uses: redhat-actions/buildah-build@v2
+      uses: redhat-actions/buildah-build@v3
       with:
         image: ${{ env.CONTROLLER_NAME }}
         tags: ${{ env.CHART_VERSION }}
@@ -63,7 +56,7 @@ jobs:
         oci: true
 
     - name: Push to Registry
-      uses: redhat-actions/push-to-registry@v2
+      uses: redhat-actions/push-to-registry@v3
       with:
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
@@ -76,7 +69,7 @@ jobs:
         set -ex
         echo ${{secrets.GITHUB_TOKEN}} | helm registry login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
 
-        cd .deploy/${CONTROLLER_NAME}
+        cd .deploy/chart
         helm package --dependency-update .
 
         helm push ${CONTROLLER_NAME}-${CHART_VERSION}.tgz oci://ghcr.io/${GITHUB_REPOSITORY}
