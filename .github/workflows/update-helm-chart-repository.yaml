@@ -35,6 +35,9 @@ jobs:
       id: install-helm
       uses: azure/setup-helm@v5
 
+    - name: Install Latest Podman
+      uses: redhat-actions/podman-install@v1
+
     - name: Git Checkout Branch
       uses: actions/checkout@v7
       with:
