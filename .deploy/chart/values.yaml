@@ -5,7 +5,7 @@ gnoma:
 
     NIPPER_IMAGE_PULL_SECRET: []
 
-    IMAGE_REGISTRY: ghcr.io
+    IMAGE_REGISTRY: ghcr.io/ahplos
 
     NIPPER_CONTROLLER_IMAGE: $<IMAGE_REGISTRY>/$<CONTROLLER_NAME>:latest
 
