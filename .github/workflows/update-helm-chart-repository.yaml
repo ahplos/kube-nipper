@@ -35,12 +35,16 @@ jobs:
       id: install-helm
       uses: azure/setup-helm@v5
 
+    - name: Git Checkout branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.BRANCH_NAME }}
+
     - name: Configure Git
       run: |
         set -ex
         git config --global user.name "${GITHUB_REPOSITORY_OWNER}"
         git config --global user.email "${GITHUB_REPOSITORY_OWNER}@donotreply.org"
-        git pull
         git switch ${BRANCH_NAME}
 
     - name: Extract and Set Relevant Controller Configuration from Helm Chart
