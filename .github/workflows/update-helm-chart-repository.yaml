@@ -1,12 +1,8 @@
 # GitHub Action that will automatically:
-# - package all charts in a repo
-# - push packaged charts to ghcr.io (GitHub container registry)
-# - rebuild the index for https dependency references (i.e. https://raw.githubusercontent.com/.../charts)
-#
-# Action will only run on push and pull_request events
-# Assumes all charts are stored in a <repo>/charts directory
+# - Build and push the controller image
+# - Package the Helm chart for deploying the controller image to a K8s cluster
 
-name: Update Helm Chart Repository
+name: Push Controller Image and Helm Chart
 
 on:
   push:
@@ -36,7 +32,8 @@ jobs:
       packages: write
     steps:
     - name: Install Helm
-      uses: azure/setup-helm@v3
+      id: install-helm
+      uses: azure/setup-helm@v5
 
     - name: Configure Git
       run: |
@@ -47,7 +44,7 @@ jobs:
         git switch ${BRANCH_NAME}
 
     - name: Extract and Set Relevant Controller Configuration from Helm Chart
-      run:
+      run: |
         set -ex
         echo "CONTROLLER_NAME=$(helm show chart . | yq -r '.name')" >> ${GITHUB_ENV}
         echo "CHART_VERSION=$(helm show chart .deploy/${CONTROLLER_NAME} | yq -r '.version')" >> ${GITHUB_ENV}
