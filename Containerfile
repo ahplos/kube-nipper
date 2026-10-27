@@ -13,6 +13,7 @@ COPY requirements.txt src /${CONTROLLER_DIR}/
 
 WORKDIR /${CONTROLLER_DIR}
 
+SHELL ["/bin/bash", "-c"]
 RUN <<EOF
     set -ex
     #### ADJUST FOLLOWING FOR OTHER BASE IMAGE DISTROS ####

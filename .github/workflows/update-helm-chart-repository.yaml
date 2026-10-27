@@ -52,7 +52,7 @@ jobs:
       with:
         image: ${{ env.CONTROLLER_NAME }}
         tags: ${{ env.CHART_VERSION }}
-        containerfiles: ./Containerfile.controller
+        containerfiles: ./Containerfile
         oci: true
 
     - name: Push to Registry
