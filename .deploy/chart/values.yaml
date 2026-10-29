@@ -36,7 +36,7 @@ gnoma:
     strategy:
       type: Recreate
     serviceAccountName: $<NIPPER_CONTROLLER_ADMIN>
-    workDir: /kube-nipper-controller
+    workDir: /$<OPERATOR_NAME>-controller
     command:
     - bash
     - -c
@@ -57,7 +57,7 @@ gnoma:
   - templateName: clusterRole
     objName: $<NIPPER_CONTROLLER_ADMIN>
     gnomaDefs:
-      MIN_PERMISSIONS: ["get", "list", "patch", "update", "watch"]
+      GENERAL_PERMISSIONS: ["get", "list", "patch", "update", "watch"]
     annotations:
       rbac.authorization.kubernetes.io/autoupdate: 'true'
     labels:
@@ -65,7 +65,7 @@ gnoma:
     rules:
     - apiGroups: [""]
       resources: ["events"]
-      verbs: ["create", "patch", "update"]
+      verbs: ["create"]
     - verbs:
       - '*'
       apiGroups:
@@ -76,7 +76,7 @@ gnoma:
       - operator.openshift.io
       resources:
       - consoles
-      verbs: $<MIN_PERMISSIONS>
+      verbs: $<GENERAL_PERMISSIONS>
     - apiGroups:
       - ''
       resources:
@@ -90,7 +90,7 @@ gnoma:
       - pods/status
       - pods/finalizers
       - pods/log
-      verbs: $<MIN_PERMISSIONS>
+      verbs: $<GENERAL_PERMISSIONS>
     - apiGroups:
       - project.openshift.io
       resources:
@@ -112,7 +112,7 @@ gnoma:
     - apiGroups:
       - nipper.ahplos.org
       resources:
-      - deletedpodsummary
+      - resourcenip
       verbs: $<VIEW_VERBS>
 
   - templateName: serviceAccount
