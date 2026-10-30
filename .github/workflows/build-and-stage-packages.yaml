@@ -9,13 +9,13 @@ on:
     branches:
     - main
     paths:
-    - 'charts/**'
+    - './**'
 
   pull_request_target:
     branches:
     - main
     paths:
-    - 'charts/**'
+    - './**'
     types:
     - closed
 
@@ -31,14 +31,14 @@ jobs:
       contents: write
       packages: write
     steps:
-    - name: Install Helm
-      id: install-helm
-      uses: azure/setup-helm@v5
-
     - name: Git Checkout Branch
       uses: actions/checkout@v7
       with:
         ref: ${{ env.BRANCH_NAME }}
+
+    - name: Install Helm
+      id: install-helm
+      uses: azure/setup-helm@v5
 
     - name: Extract and Set Relevant Controller Configuration from Helm Chart
       run: |

@@ -1,3 +1,3 @@
-# Kube-Nipper operator
+# Kube-Nipper Controller
 
-OpenShift operator and console plugin for change management and troubleshooting.
+Controller that can create snapshots of pods is their containers are restarted or they are deleted.

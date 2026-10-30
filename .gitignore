@@ -12,4 +12,3 @@ integration-tests/screenshots
 *.bak
 *.tmp
 *.orig
-*.lock
