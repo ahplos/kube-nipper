@@ -1,0 +1,6 @@
+dependencies:
+- name: gnoma
+  repository: oci://ghcr.io/ahplos
+  version: 0.1.0
+digest: sha256:6ebde126ab307795d0239e0d4ec03f043010f6d3935e16874668768b0def16fb
+generated: "2026-10-23T19:40:28.750380057-05:00"

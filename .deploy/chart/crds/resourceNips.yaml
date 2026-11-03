@@ -17,10 +17,18 @@ spec:
     served: true
     storage: true
     additionalPrinterColumns:
-    - name: Object
+    - name: Involved ApiVersion
       type: string
       description: The apiVersion of the resource captured in this nip.
-      jsonPath: .data.gvk
+      jsonPath: .involvedObject.apiVersion
+    - name: Involved Kind
+      type: string
+      description: The apiVersion of the resource captured in this nip.
+      jsonPath: .involvedObject.kind
+    - name: Source
+      type: string
+      description: The time the nip was captured.
+      jsonPath: .source
     - name: Captured
       type: string
       description: The time the nip was captured.
@@ -29,44 +37,32 @@ spec:
       openAPIV3Schema:
         type: object
         properties:
-          data:
+          involvedObject:
             type: object
-            properties:
-              events:
-                type: array
-                items:
-                  type: object
-                  x-kubernetes-preserve-unknown-fields: true
-              gvk:
-                type: string
-              metadata:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              onDeleteLogs:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    container:
-                      type: string
-                    timeCollected:
-                      type: string
-                    logs:
-                      type: string
-              onRestartLogs:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    container:
-                      type: string
-                    timeCollected:
-                      type: string
-                    logs:
-                      type: string
-              spec:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              status:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
+            description: |-
+              Everything in the resource that was nipped, including kind, apiVersion, metadata, spec/data, and status,
+              except metadata.managedFields.
+            x-kubernetes-preserve-unknown-fields: true
+          involvedObjectEvents:
+            type: array
+            description: Any events associated with the resource being nipped.
+            items:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          containerLogs:
+            type: array
+            description: List of container logs.
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of container.
+                init:
+                  type: boolean
+                  description: True if the container was an init container.
+                logs:
+                  type: string
+          source:
+            type: string
+            description: Rule that triggered the nip.

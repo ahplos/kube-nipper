@@ -32,8 +32,8 @@ class _CONSTS(type):
         return 'namespace'
 
     @property
-    def DATA(self) -> str:
-        return 'data'
+    def INVOLVED_OBJECT(self) -> str:
+        return 'involvedObject'
 
     @property
     def SPEC(self) -> str:
@@ -44,16 +44,24 @@ class _CONSTS(type):
         return 'status'
 
     @property
-    def EVENTS(self) -> str:
-        return 'events'
+    def INVOLVED_OBJECT_EVENTS(self) -> str:
+        return 'involvedObjectEvents'
 
     @property
-    def ON_DELETE_LOGS(self) -> str:
-        return 'onDeleteLogs'
+    def RESTART_COUNT(self) -> str:
+        return 'restartCount'
 
     @property
-    def ON_RESTART_LOGS(self) -> str:
-        return 'onRestartLogs'
+    def CONTAINER_LOGS(self) -> str:
+        return 'containerLogs'
+
+    @property
+    def CONTAINERS(self) -> str:
+        return 'containers'
+
+    @property
+    def INIT_CONTAINERS(self) -> str:
+        return 'initContainers'
 
 class NIP_CONSTS(object, metaclass=_CONSTS):
     pass

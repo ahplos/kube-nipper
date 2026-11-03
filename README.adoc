@@ -1,3 +1,14 @@
 # Kube-Nipper Controller
 
-Controller that can create snapshots of pods is their containers are restarted or they are deleted.
+Controller that can create snapshots of pods if their containers are restarted or they are deleted.
+
+
+## Installing on your cluster
+The following will install the controller on your cluster for testing (still in development right now):
+
+[source,shell]
+----
+helm upgrade --install kube-nipper-controller -n kube-nipper-operator --create-namespace --set gnoma.gnomaDefs.VERSION=0.1.0  oci://ghcr.io/ahplos/kube-nipper/kube-nipper-controller --version 0.1.0
+----
+
+

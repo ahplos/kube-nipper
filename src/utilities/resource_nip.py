@@ -23,17 +23,31 @@ class ResourceNip(new_class('ResourceNip', version=f'{GROUP}/{NIP_CONSTS.V1_BETA
         self.raw.setdefault(NIP_CONSTS.METADATA, self.__create_box()).setdefault(NIP_CONSTS.LABELS, self.__create_box())
         self.raw.metadata.setdefault(NIP_CONSTS.ANNOTATIONS, self.__create_box())
 
-        self.raw.setdefault(NIP_CONSTS.DATA, self.__create_box())
-        self.raw.data.setdefault(NIP_CONSTS.EVENTS, BoxList())
-        self.raw.data.setdefault(NIP_CONSTS.METADATA, Box())
-        self.raw.data.setdefault(NIP_CONSTS.ON_DELETE_LOGS, BoxList())
-        self.raw.data.setdefault(NIP_CONSTS.ON_RESTART_LOGS, BoxList())
-        self.raw.data.setdefault(NIP_CONSTS.SPEC, Box())
-        self.raw.data.setdefault(NIP_CONSTS.STATUS, Box())
+        self.raw.setdefault(NIP_CONSTS.INVOLVED_OBJECT, self.__create_box())
+
+        self.raw.setdefault(NIP_CONSTS.CONTAINER_LOGS, BoxList())
+
+        self.raw.setdefault(NIP_CONSTS.INVOLVED_OBJECT_EVENTS, BoxList())
 
     @property
-    def data(self):
-        return self.raw.data
+    def containerLogs(self):
+        return self.raw.containerLogs
+
+    @property
+    def involvedObject(self):
+        return self.raw.involvedObject
+
+    @property
+    def involvedObjectEvents(self):
+        return self.raw.involvedObjectEvents
+
+    @property
+    def source(self):
+        return self.raw.source
+
+    @source.setter
+    def source(self, source):
+        self.raw.source = source
 
     @APIObject.raw.setter
     def raw(self, value: Any) -> None:
