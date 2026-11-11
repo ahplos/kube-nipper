@@ -11,4 +11,12 @@ The following will install the controller on your cluster for testing (still in 
 helm upgrade --install kube-nipper-controller -n kube-nipper-operator --create-namespace --set gnoma.gnomaDefs.VERSION=0.1.0  oci://ghcr.io/ahplos/kube-nipper/kube-nipper-controller --version 0.1.0
 ----
 
+For now, to enable the controller in a particular namespace, annotate the namespace with
+
+[source]
+----
+nipper.ahplos.org/resource-nip: "true"
+----
+
+The annotation will change in the future as the controller evolves to support more general auditing functionality.
 

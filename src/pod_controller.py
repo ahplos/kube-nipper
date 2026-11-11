@@ -80,6 +80,8 @@ def create_pod_nip(namespace: str, name: str, body: kopf.body, param: str, logge
                             raw=True)
     pod_events = BoxList(event_list)
     pod_events.sort(key=lambda event: (event.lastTimestamp is None, event.lastTimestamp))
+    for event in pod_events:
+        del event.metadata.managedFields
     pod_nip.involvedObjectEvents.extend(pod_events)
 
     container_logs = get_container_logs(pod_nip, body, container_name)
