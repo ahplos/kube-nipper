@@ -110,7 +110,7 @@ def get_container_logs(pod_nip: ResourceNip, body: kopf.Body, container_name: st
     pod = Pod(body.metadata.name, body.metadata.namespace)
     for cont_name in cont_names:
         container_logs.append({
-            'container': cont_name,
+            'name': cont_name,
             'init': cont_name in init_cont_names,
             'logs': '\n'.join(pod.logs(container=cont_name, previous=(container_name != None), tail_lines=300))
         })
